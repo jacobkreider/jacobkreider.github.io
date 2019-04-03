@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Understanding Data Science</title><link>https://example.com/</link><description>A blog on concepts and practicum in data science</description><atom:link href="https://example.com/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2019 &lt;a href="mailto:jacob@happinessdata.com"&gt;Jacob Kreider&lt;/a&gt; </copyright><lastBuildDate>Wed, 03 Apr 2019 01:06:23 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Understanding the Basics of Markov Decision Processes</title><link>https://example.com/posts/understanding-the-basics-of-markov-decision-processes/</link><dc:creator>Jacob Kreider</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Understanding-the-Basics-of-Markov-Decision-Processes"&gt;Understanding the Basics of Markov Decision Processes&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#Understanding-the-Basics-of-Markov-Decision-Processes"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In this post:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Markov Process (or Markov Chains)&lt;/li&gt;
+&lt;li&gt;Markov Reward Processes&lt;/li&gt;
+&lt;li&gt;Markov Decision Processes&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="Markov-Process/Chain"&gt;Markov Process/Chain&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#Markov-Process/Chain"&gt;¶&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;Let's say we are observing some type of system in a way that means we can only watch, not interact with it or change it in any way. Any change in the system is a different &lt;em&gt;state&lt;/em&gt;, and all the possible states of the system is known as the &lt;em&gt;state space&lt;/em&gt;. For this example, we will think about the daily change in value, positive or negative, of an imaginary stock price. We can observe the current day's state as &lt;em&gt;higher&lt;/em&gt; or &lt;em&gt;lower&lt;/em&gt; than the previous day's value-- this is our state space. Over time, we end up with a seuqence  of these observations, forming a &lt;em&gt;chain of states&lt;/em&gt; ([higher, higher, lower, lower, higher, lower, etc]). This is the &lt;em&gt;history&lt;/em&gt; of our state space.&lt;/p&gt;
+&lt;p&gt;In order for this sytem to be a &lt;em&gt;markov process&lt;/em&gt;, it needs to satisfy the &lt;strong&gt;Markov property*&lt;/strong&gt;; namely, that "future system dynamics from any state must depend on this state only" (Lapan, 12). Each state must be self-contained and not dependent on the whole history-- future states must be able to be modeled from only one state. (Of course, this is not true of stock prices in the real world, but we'll bend the rules of reality a bit for our example.)&lt;/p&gt;
+&lt;p&gt;When a system model fulfills the Markov property, we can build a &lt;strong&gt;transition matrix&lt;/strong&gt; from the probabilities of transitioning from one state to another. Below, we can see the transition matrix for our simple stock model:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="n"&gt;transitionMatrix&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;([[&lt;/span&gt;&lt;span class="mf"&gt;0.60&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.40&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                              &lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;0.25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.75&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
+                              &lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"Higher"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"Lower"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                              &lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"Higher"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"Lower"&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="n"&gt;transitionMatrix&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+&lt;div class="prompt output_prompt"&gt;Out[1]:&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Higher&lt;/th&gt;
+      &lt;th&gt;Lower&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Higher&lt;/th&gt;
+      &lt;td&gt;0.60&lt;/td&gt;
+      &lt;td&gt;0.40&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Lower&lt;/th&gt;
+      &lt;td&gt;0.25&lt;/td&gt;
+      &lt;td&gt;0.75&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;As we can see, if a day's stock value is higher than the day before, there is a 60% chance that the price will rise further the next day, and a 40% chance it will decline; however, if the value is lower than the previous day, there is a 75% chance it will continue to decline. Our model is pretty bearish, it seems!&lt;/p&gt;
+&lt;h6 id="A-quick-review:"&gt;A quick review:&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#A-quick-review:"&gt;¶&lt;/a&gt;&lt;/h6&gt;&lt;ul&gt;
+&lt;li&gt;A Markov process consists of a state space which contains all possible states in which  the system can be observed&lt;/li&gt;
+&lt;li&gt;A sequence of states forms its history, or chain of states&lt;/li&gt;
+&lt;li&gt;A transition matrix defines the dynamics of the system by containing the probabilities of the system transitioning between each state&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;One more important point: the  Markov property implies &lt;em&gt;stationarity&lt;/em&gt;-- the "underlying transition distribution for any state does not change over time" (Lapan, 15). If some hidden, unobserved factor changes the underlying system dynamics, then the Marvov property does not apply.&lt;/p&gt;
+&lt;h4 id="Markov-Reward-Process"&gt;Markov Reward Process&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#Markov-Reward-Process"&gt;¶&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;The transition matrix gives us the probability of state-to-state changes, but we need to assign values to those transitions. This will be the &lt;em&gt;reward&lt;/em&gt;. Rewards can be positive or negative, of all sizes. In addition to the reward, we will also add a discount factor gamma,  $\gamma$ , which is a single number from 0 to 1. (More on this later.)&lt;/p&gt;
+&lt;p&gt;Since we observe a chain of states in a Markov process (and a Markov reward process), we now have a reward value for every transition in the system. With our reward values and our discount factor, we can define &lt;strong&gt;&lt;em&gt;return&lt;/em&gt;&lt;/strong&gt; as:&lt;/p&gt;
+&lt;p&gt;$$G_t= \sum_{i=0}^\infty \gamma^k R_{t+k+1}$$, where k = number of steps we are from our starting point at time &lt;em&gt;t&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;In essence, the return value is the sum of future rewards, degraded by the strength of our discount value. A discount value of 1 means we have given our agent perfect vision into future rewards, while a value of 0 means it is unable to consider anything but the current reward.&lt;/p&gt;
+&lt;p&gt;Gamma is going to be very important in reinforcement learning applications, but for now we will think of it as only our ability to see into the future and remember that the higher the number, the further we can see.&lt;/p&gt;
+&lt;p&gt;At the end of the day, individual return values don't mean too much-- they are tied to very specific chains, which means that every state can have wide variations in their return values. To make it more useful, we can take the average of a large number of possible chains for a given state, giving us a &lt;strong&gt;&lt;em&gt;value of state&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;h6 id="A-quick-review:"&gt;A quick review:&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#A-quick-review:"&gt;¶&lt;/a&gt;&lt;/h6&gt;&lt;ul&gt;
+&lt;li&gt;In addition to transition probabilities, we also assign a value to each transition, called a reward&lt;/li&gt;
+&lt;li&gt;We can calculate a return value by multiplying the sum of future rewards by a discount factor $\gamma$&lt;/li&gt;
+&lt;li&gt;The larger the discount factor, the further into the future we can see&lt;/li&gt;
+&lt;li&gt;By averaging the returns across many chains for a given state, we get a much more useful metric called the value of state&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="Markov-Decision-Process"&gt;Markov Decision Process&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#Markov-Decision-Process"&gt;¶&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;Next, we want to add a finite set of actions called an &lt;strong&gt;&lt;em&gt;action space&lt;/em&gt;&lt;/strong&gt; to our process. When we add action to our transition matrix from our initial Markov process, it adds an extra dimension, making a &lt;em&gt;transition cube&lt;/em&gt;. Instead of passively observing state changes as we did in our stock example, we can now take an action at every single timestep. Our cube identifies the probability that state &lt;em&gt;i&lt;/em&gt; will become state &lt;em&gt;j&lt;/em&gt; given action &lt;em&gt;k&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;To make it a bit clearer, our agent can now affect the probability that the system will end up in a particular state. Not a bad ability to have!&lt;/p&gt;
+&lt;p&gt;Just as in the Markov Reward Process section, we are not only interested in probabilities, we also need to add these actions to our reward matrix. So, our agent doesn't just get a reward for the state the system is in (or goes into), it also gets rewarded for the actions it takes.&lt;/p&gt;
+&lt;p&gt;This gets us to one of the key features of both Markov Decision Processes and Reinforcement Learning-- &lt;strong&gt;&lt;em&gt;policy&lt;/em&gt;&lt;/strong&gt;. Policies are rule sets governing the behavior of our agent. Policy choice is important, because our agent will seek to maximize its return. Small changes in policy (say, rewarding a certain action more than a certain state) can have dramatic effect on the return that is achieved.&lt;/p&gt;
+&lt;p&gt;Policy can be defined as:&lt;/p&gt;
+&lt;p&gt;$$\pi(a|s) = P[A_t = a|S_t = s] $$ , or, the probability distribution over actions for every possible state.&lt;/p&gt;
+&lt;p&gt;One final note: If our policy stays fixed and unchanging, we can model our Markov Decision Process as a Markov Reward Process by reducing the transition and reward matrices via the policy's probabilities. No need for the action dimensions.&lt;/p&gt;
+&lt;h6 id="A-few-notes:"&gt;A few notes:&lt;a class="anchor-link" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/#A-few-notes:"&gt;¶&lt;/a&gt;&lt;/h6&gt;&lt;ul&gt;
+&lt;li&gt;By adding actions with their own set of rewards, we construct a Markov Decision Process&lt;/li&gt;
+&lt;li&gt;The policy can be defined as the rule sets governing the behavior of our agent&lt;/li&gt;
+&lt;li&gt;Setting good policy is vitally important to the success of our agent&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;Sources&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Lapan, M. (2018). &lt;em&gt;Deep reinforcement learning hands-on: Apply modern RL methods, with deep Q-networks, value iteration, policy gradients, TRPO, AlphaGo Zero and more.&lt;/em&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</description><guid>https://example.com/posts/understanding-the-basics-of-markov-decision-processes/</guid><pubDate>Wed, 03 Apr 2019 00:33:24 GMT</pubDate></item></channel></rss>
