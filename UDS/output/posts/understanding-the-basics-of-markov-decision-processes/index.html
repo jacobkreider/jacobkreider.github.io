@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Understanding the Basics of Markov Decision Processes | Understanding Data Science</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Jacob Kreider">
+<meta property="og:site_name" content="Understanding Data Science">
+<meta property="og:title" content="Understanding the Basics of Markov Decision Processes">
+<meta property="og:url" content="https://example.com/posts/understanding-the-basics-of-markov-decision-processes/">
+<meta property="og:description" content="Understanding the Basics of Markov Decision Processes¶In this post:
+
+Markov Process (or Markov Chains)
+Markov Reward Processes
+Markov Decision Processes
+
+Markov Process/Chain¶Let's say we are observin">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2019-04-02T19:33:24-05:00">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href="https://example.com/">
+
+            <span id="blog-title">Understanding Data Science</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav">
+<li class="nav-item">
+    <a href="index.ipynb" id="sourcelink" class="nav-link">Source</a>
+    </li>
+
+
+                    
+            </ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archive</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS feed</a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Understanding the Basics of Markov Decision Processes</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                    Jacob Kreider
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2019-04-02T19:33:24-05:00" itemprop="datePublished" title="2019-04-02 19:33">2019-04-02 19:33</time></a>
+            </p>
+                <p class="commentline">
+        
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.ipynb" class="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Understanding-the-Basics-of-Markov-Decision-Processes">Understanding the Basics of Markov Decision Processes<a class="anchor-link" href="#Understanding-the-Basics-of-Markov-Decision-Processes">¶</a>
+</h3>
+<p>In this post:</p>
+<ul>
+<li>Markov Process (or Markov Chains)</li>
+<li>Markov Reward Processes</li>
+<li>Markov Decision Processes</li>
+</ul>
+<h4 id="Markov-Process/Chain">Markov Process/Chain<a class="anchor-link" href="#Markov-Process/Chain">¶</a>
+</h4>
+<p>Let's say we are observing some type of system in a way that means we can only watch, not interact with it or change it in any way. Any change in the system is a different <em>state</em>, and all the possible states of the system is known as the <em>state space</em>. For this example, we will think about the daily change in value, positive or negative, of an imaginary stock price. We can observe the current day's state as <em>higher</em> or <em>lower</em> than the previous day's value-- this is our state space. Over time, we end up with a seuqence  of these observations, forming a <em>chain of states</em> ([higher, higher, lower, lower, higher, lower, etc]). This is the <em>history</em> of our state space.</p>
+<p>In order for this sytem to be a <em>markov process</em>, it needs to satisfy the <strong>Markov property*</strong>; namely, that "future system dynamics from any state must depend on this state only" (Lapan, 12). Each state must be self-contained and not dependent on the whole history-- future states must be able to be modeled from only one state. (Of course, this is not true of stock prices in the real world, but we'll bend the rules of reality a bit for our example.)</p>
+<p>When a system model fulfills the Markov property, we can build a <strong>transition matrix</strong> from the probabilities of transitioning from one state to another. Below, we can see the transition matrix for our simple stock model:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">transitionMatrix</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mf">0.60</span><span class="p">,</span> <span class="mf">0.40</span><span class="p">]</span>
+                              <span class="p">,</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">]]</span>
+                              <span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Higher"</span><span class="p">,</span> <span class="s2">"Lower"</span><span class="p">]</span>
+                              <span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Higher"</span><span class="p">,</span> <span class="s2">"Lower"</span><span class="p">])</span>
+<span class="n">transitionMatrix</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[1]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Higher</th>
+      <th>Lower</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>Higher</th>
+      <td>0.60</td>
+      <td>0.40</td>
+    </tr>
+<tr>
+<th>Lower</th>
+      <td>0.25</td>
+      <td>0.75</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As we can see, if a day's stock value is higher than the day before, there is a 60% chance that the price will rise further the next day, and a 40% chance it will decline; however, if the value is lower than the previous day, there is a 75% chance it will continue to decline. Our model is pretty bearish, it seems!</p>
+<h6 id="A-quick-review:">A quick review:<a class="anchor-link" href="#A-quick-review:">¶</a>
+</h6>
+<ul>
+<li>A Markov process consists of a state space which contains all possible states in which  the system can be observed</li>
+<li>A sequence of states forms its history, or chain of states</li>
+<li>A transition matrix defines the dynamics of the system by containing the probabilities of the system transitioning between each state</li>
+</ul>
+<p>One more important point: the  Markov property implies <em>stationarity</em>-- the "underlying transition distribution for any state does not change over time" (Lapan, 15). If some hidden, unobserved factor changes the underlying system dynamics, then the Marvov property does not apply.</p>
+<h4 id="Markov-Reward-Process">Markov Reward Process<a class="anchor-link" href="#Markov-Reward-Process">¶</a>
+</h4>
+<p>The transition matrix gives us the probability of state-to-state changes, but we need to assign values to those transitions. This will be the <em>reward</em>. Rewards can be positive or negative, of all sizes. In addition to the reward, we will also add a discount factor gamma,  $\gamma$ , which is a single number from 0 to 1. (More on this later.)</p>
+<p>Since we observe a chain of states in a Markov process (and a Markov reward process), we now have a reward value for every transition in the system. With our reward values and our discount factor, we can define <strong><em>return</em></strong> as:</p>
+<p>$$G_t= \sum_{i=0}^\infty \gamma^k R_{t+k+1}$$, where k = number of steps we are from our starting point at time <em>t</em>.</p>
+<p>In essence, the return value is the sum of future rewards, degraded by the strength of our discount value. A discount value of 1 means we have given our agent perfect vision into future rewards, while a value of 0 means it is unable to consider anything but the current reward.</p>
+<p>Gamma is going to be very important in reinforcement learning applications, but for now we will think of it as only our ability to see into the future and remember that the higher the number, the further we can see.</p>
+<p>At the end of the day, individual return values don't mean too much-- they are tied to very specific chains, which means that every state can have wide variations in their return values. To make it more useful, we can take the average of a large number of possible chains for a given state, giving us a <strong><em>value of state</em></strong>.</p>
+<h6 id="A-quick-review:">A quick review:<a class="anchor-link" href="#A-quick-review:">¶</a>
+</h6>
+<ul>
+<li>In addition to transition probabilities, we also assign a value to each transition, called a reward</li>
+<li>We can calculate a return value by multiplying the sum of future rewards by a discount factor $\gamma$</li>
+<li>The larger the discount factor, the further into the future we can see</li>
+<li>By averaging the returns across many chains for a given state, we get a much more useful metric called the value of state</li>
+</ul>
+<h4 id="Markov-Decision-Process">Markov Decision Process<a class="anchor-link" href="#Markov-Decision-Process">¶</a>
+</h4>
+<p>Next, we want to add a finite set of actions called an <strong><em>action space</em></strong> to our process. When we add action to our transition matrix from our initial Markov process, it adds an extra dimension, making a <em>transition cube</em>. Instead of passively observing state changes as we did in our stock example, we can now take an action at every single timestep. Our cube identifies the probability that state <em>i</em> will become state <em>j</em> given action <em>k</em>.</p>
+<p>To make it a bit clearer, our agent can now affect the probability that the system will end up in a particular state. Not a bad ability to have!</p>
+<p>Just as in the Markov Reward Process section, we are not only interested in probabilities, we also need to add these actions to our reward matrix. So, our agent doesn't just get a reward for the state the system is in (or goes into), it also gets rewarded for the actions it takes.</p>
+<p>This gets us to one of the key features of both Markov Decision Processes and Reinforcement Learning-- <strong><em>policy</em></strong>. Policies are rule sets governing the behavior of our agent. Policy choice is important, because our agent will seek to maximize its return. Small changes in policy (say, rewarding a certain action more than a certain state) can have dramatic effect on the return that is achieved.</p>
+<p>Policy can be defined as:</p>
+<p>$$\pi(a|s) = P[A_t = a|S_t = s] $$ , or, the probability distribution over actions for every possible state.</p>
+<p>One final note: If our policy stays fixed and unchanging, we can model our Markov Decision Process as a Markov Reward Process by reducing the transition and reward matrices via the policy's probabilities. No need for the action dimensions.</p>
+<h6 id="A-few-notes:">A few notes:<a class="anchor-link" href="#A-few-notes:">¶</a>
+</h6>
+<ul>
+<li>By adding actions with their own set of rewards, we construct a Markov Decision Process</li>
+<li>The policy can be defined as the rule sets governing the behavior of our agent</li>
+<li>Setting good policy is vitally important to the success of our agent</li>
+</ul>
+<p><em>Sources</em></p>
+<p>Lapan, M. (2018). <em>Deep reinforcement learning hands-on: Apply modern RL methods, with deep Q-networks, value iteration, policy gradients, TRPO, AlphaGo Zero and more.</em></p>
+
+</div>
+</div>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+
+
+        </section><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script></article><!--End of body content--><footer id="footer">
+            Contents © 2019         <a href="mailto:jacob@happinessdata.com">Jacob Kreider</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element) {
+            return element.getElementsByTagName('img')[0].alt;
+    }});
+    </script>
+</body>
+</html>
