@@ -17,7 +17,7 @@
 <meta property="og:site_name" content="Understanding Data Science">
 <meta property="og:title" content="Building a (Very Simple) Autonomous Agent and Environment">
 <meta property="og:url" content="https://jacobkreider.github.io/posts/building-a-very-simple-autonomous-agent-and-environment/">
-<meta property="og:description" content="Write your post here.">
+<meta property="og:description" content="*Before reading and following along with this post, it might be helpful to go read [this](https://jacobkreider.github.io/posts/understanding-the-basics-of-markov-decision-processes/) post on agents, e">
 <meta property="og:type" content="article">
 <meta property="article:published_time" content="2019-04-03T20:41:59-05:00">
 </head>
@@ -98,13 +98,301 @@
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div class="cell border-box-sizing text_cell rendered">
+    <div>
+<div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Write your post here.</p>
+<p><sub>*Before reading and following along with this post, it might be helpful to go read [this](https://jacobkreider.github.io/posts/understanding-the-basics-of-markov-decision-processes/) post on agents, environments, and Markov decision processes. Also, the code below is found in Maxim Laplan's excellent book, Deep Reinforcement Learning Hands-On, cited fully at the end of the post. His code without my commentary can be found [here](https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On/blob/master/Chapter02/01_agent_anatomy.py).*</sub>&lt;/br&gt;&lt;/br&gt;</p>
+<h3 id="How-to-build-a-(very-simple)-autonomous-agent-and-environment">How to build a (very simple) autonomous agent and environment<a class="anchor-link" href="#How-to-build-a-(very-simple)-autonomous-agent-and-environment">¶</a>
+</h3>
+<p>As a beginning exercise in my ongoing series on implementing Reinforcement Learning models, we'll define a simplsitic environment that gives rewards for a determined number of steps, regardless of the actual actions.</p>
+<p>First, a quick review:</p>
+<p><strong>Agent</strong>: Some piece of code that implements some <em>policy</em>. Given observations, the policy dictates what action the agent takes at each timestep</p>
+<p><strong>Environment</strong>: The model of the world, external to the agent. Provides observations, gives awards, and changes state based on actions.</p>
+<h6 id="Defining-our-environment">Defining our environment<a class="anchor-link" href="#Defining-our-environment">¶</a>
+</h6>
+<p>We'll start by initializing the internal state of the environment, which is simply a counter that limits the total number of steps the agent is allowed to take.</p>
 
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Environment</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's now define <em>get_observation()</em>, which returns the observation of the current environment to the agent. Normally, it would be implemented as a function of the internal environment state, but in our case the vector is always zero.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">return</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we'll define <em>get_actions</em>, a set of actions from which the agent can choose. For this model, there are only two actions:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As our agent takes actions within the environment, it performs series of steps called <em>episodes</em>. We need to define when an episode is over, so the agent knows when there is no longer any way to communicate with the environment:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">==</span> <span class="mi">0</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The <em>action()</em> method is perhaps the most important piece of the environment. The action() method both handles the agent's action (thereby changing the environment's state) and returns a reward to the agent for this action. In this case, the reward is random, and the action has no effect on the environment. Additionally, we reduce the <em>steps_left</em> counter by one. Finally, if the steps remaining == 0, then we stop the episodes.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Game is over"</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">-=</span> <span class="mi">1</span>
+  <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h6 id="Defining-our-agent">Defining our agent<a class="anchor-link" href="#Defining-our-agent">¶</a>
+</h6>
+<p>We'll begin by initializing our agent and a counter which will be used to store the reward value as it accumulates:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we'll define a <em>step()</em> function that accepts our environment as an argument, allowing the agent to do a few things:</p>
+<ul>
+<li>Observe the state of the environment via <em>current_obs</em>
+</li>
+<li>Make a decision on which action to perform via <em>actions</em>
+</li>
+<li>Pass the action to the environment and receive the reward (<em>reward/env.actions</em>)</li>
+<li>Add the current reward to the accumulated rewards</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+  <span class="n">current_obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_observation</span><span class="p">()</span> <span class="c1"># Observe the environment</span>
+  <span class="n">actions</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_actions</span><span class="p">()</span> <span class="c1"># Get available actions</span>
+  <span class="n">reward</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">actions</span><span class="p">))</span> <span class="c1"># Perform the action, get a reward</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span> <span class="c1"># Add reward to total</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h6 id="A-quick-review:">A quick review:<a class="anchor-link" href="#A-quick-review:">¶</a>
+</h6>
+<p>So, we've done quite a bit here, and it may not be lost on anyone following along that the above code snippets don't mean much until they are combined correctly and passed through a proedure to create the classes and run an episode. Before we do that, let's review what we've done:</p>
+<ul>
+<li>We created classes for both our <em>environment</em> and our <em>agent</em>
+</li>
+<li>We defined our <em>observation vector</em>, allowing our agent to see the environment in its current state</li>
+<li>We defined the <em>action space</em> for our agent in the environment</li>
+<li>We set the rules for when an episode ends</li>
+<li>We defined what happens to the environment (nothing, in this case) and what rewards are given when our agent takes an actions</li>
+<li>We defined what happens at each step in an episode</li>
+</ul>
+<p><em>Whew</em>, a lot for a simple environment! Let's put it all together and run the code:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">class</span> <span class="nc">Environment</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">=</span> <span class="mi">10</span>
+    
+  <span class="k">def</span> <span class="nf">get_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">get_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">==</span> <span class="mi">0</span>
+  
+  <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Game is over"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">steps_left</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+  
+<span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+    
+  <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="n">current_obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_observation</span><span class="p">()</span> <span class="c1"># Observe the environment</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_actions</span><span class="p">()</span> <span class="c1"># Get available actions</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">actions</span><span class="p">))</span> <span class="c1"># Perform action,get reward</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span> <span class="c1"># Add reward to total</span>
+  
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
+  <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+  
+  <span class="k">while</span> <span class="ow">not</span> <span class="n">env</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+    
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"Total reward collected: </span><span class="si">%.4f</span><span class="s2">"</span> <span class="o">%</span> <span class="n">agent</span><span class="o">.</span><span class="n">total_reward</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Total reward collected: 3.8136
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>Sources</em></p>
+<p>Lapan, M. (2018). <em>Deep reinforcement learning hands-on: Apply modern RL methods, with deep Q-networks, value iteration, policy gradients, TRPO, AlphaGo Zero and more.</em></p>
+
+</div>
 </div>
 </div>
 </div>
