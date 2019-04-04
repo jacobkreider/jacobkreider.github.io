@@ -15,7 +15,7 @@
  </url>
  <url>
   <loc>https://jacobkreider.github.io/archive.html</loc>
-  <lastmod>2019-04-04T00:44:00Z</lastmod>
+  <lastmod>2019-04-04T01:46:00Z</lastmod>
  </url>
  <url>
   <loc>https://jacobkreider.github.io/categories/</loc>
@@ -28,6 +28,10 @@
  <url>
   <loc>https://jacobkreider.github.io/listings/</loc>
   <lastmod>2019-04-03T01:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://jacobkreider.github.io/posts/building-a-very-simple-autonomous-agent-and-environment/</loc>
+  <lastmod>2019-04-04T01:46:00Z</lastmod>
  </url>
  <url>
   <loc>https://jacobkreider.github.io/posts/understanding-the-basics-of-markov-decision-processes/</loc>

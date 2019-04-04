@@ -59,3 +59,6 @@
 'render_posts', (55808, 56)
 'render_taxonomies:output/rss.xml', (56320, 718)
 'copy_assets:output/assets/js/fancydates.js', (57344, 404)
+'render_posts:cache/posts/building-a-very-simple-autonomous-agent-and-environment.html', (57856, 501)
+'render_pages:output/posts/building-a-very-simple-autonomous-agent-and-environment/index.html', (63488, 5563)
+'render_sources:output/posts/building-a-very-simple-autonomous-agent-and-environment/index.ipynb', (75264, 340)
