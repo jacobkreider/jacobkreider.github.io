@@ -20,10 +20,10 @@ BLOG_AUTHOR = "Jacob Kreider"  # (translatable)
 BLOG_TITLE = "Understanding Data Science"  # (translatable)
 # This is the main URL for your site. It will be used
 # in a prominent link. Don't forget the protocol (http/https)!
-SITE_URL = "https://example.com/"
+SITE_URL = "https://jacobkreider.github.io/"
 # This is the URL where Nikola's output will be deployed.
 # If not set, defaults to SITE_URL
-# BASE_URL = "https://example.com/"
+# BASE_URL = "https://jacobkreider.github.io/"
 BLOG_EMAIL = "jacob@happinessdata.com"
 BLOG_DESCRIPTION = "A blog on concepts and practicum in data science"  # (translatable)
 
@@ -140,7 +140,7 @@ NAVIGATION_LINKS = {
     DEFAULT_LANG: (
         ("/archive.html", "Archive"),
         ("/categories/", "Tags"),
-        ("/rss.xml", "RSS feed"),
+        ("https://github.com/jacobkreider", "Jacob's Github Repositories"),
     ),
 }
 
